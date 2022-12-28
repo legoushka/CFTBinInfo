@@ -1,8 +1,11 @@
 package ru.legoushka.cftbinlist.di
 
+import android.content.Context
+import androidx.room.Room
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.*
 import io.ktor.client.engine.android.*
@@ -12,19 +15,11 @@ import io.ktor.serialization.kotlinx.json.*
 import ru.legoushka.cftbinlist.data.source.BinInfoDataSource
 import ru.legoushka.cftbinlist.data.source.BinInfoRepository
 import ru.legoushka.cftbinlist.data.source.DefaultBinInfoRepository
-import ru.legoushka.cftbinlist.data.source.local.BinInfoLocalDataSource
+import ru.legoushka.cftbinlist.data.source.SearchHistorySource
+import ru.legoushka.cftbinlist.data.source.local.SearchHistoryDatabase
+import ru.legoushka.cftbinlist.data.source.local.SearchHistoryLocalSource
 import ru.legoushka.cftbinlist.data.source.remote.BinInfoRemoteDataSource
-import javax.inject.Qualifier
 import javax.inject.Singleton
-
-
-@Qualifier
-@Retention(AnnotationRetention.RUNTIME)
-annotation class RemoteBinInfoDataSource
-
-@Qualifier
-@Retention(AnnotationRetention.RUNTIME)
-annotation class LocalBinInfoDataSource
 
 
 @Module
@@ -34,10 +29,10 @@ object RepositoryModule {
     @Singleton
     @Provides
     fun provideBinInfoRepository(
-        @RemoteBinInfoDataSource remoteDataSource: BinInfoDataSource,
-        @LocalBinInfoDataSource localDataSource: BinInfoDataSource,
+        remoteDataSource: BinInfoDataSource,
+        searchHistorySource: SearchHistorySource,
     ): BinInfoRepository {
-        return DefaultBinInfoRepository(remoteDataSource, localDataSource)
+        return DefaultBinInfoRepository(remoteDataSource, searchHistorySource)
     }
 }
 
@@ -50,24 +45,37 @@ object DataSourceModule {
     @Provides
     fun provideHttpClient(): HttpClient {
         return HttpClient(Android) {
-            install(Logging){
+            install(Logging) {
                 level = LogLevel.ALL
             }
-            install(ContentNegotiation){
+            install(ContentNegotiation) {
                 json()
             }
         }
     }
 
     @Singleton
-    @RemoteBinInfoDataSource
     @Provides
-    fun provideBinInfoRemoteDataSource(httpClient: HttpClient): BinInfoDataSource = BinInfoRemoteDataSource(httpClient)
+    fun provideBinInfoRemoteDataSource(httpClient: HttpClient): BinInfoDataSource =
+        BinInfoRemoteDataSource(httpClient)
 
     @Singleton
-    @LocalBinInfoDataSource
     @Provides
-    fun provideBinInfoLocalDataSource(): BinInfoDataSource = BinInfoLocalDataSource()
+    fun provideSearchHistorySource(dataBase: SearchHistoryDatabase): SearchHistorySource =
+        SearchHistoryLocalSource(dataBase.searchHistoryDao())
+}
 
+@Module
+@InstallIn(SingletonComponent::class)
+object DatabaseModule {
 
+    @Singleton
+    @Provides
+    fun provideDataBase(@ApplicationContext context: Context): SearchHistoryDatabase {
+        return Room.databaseBuilder(
+            context.applicationContext,
+            SearchHistoryDatabase::class.java,
+            "History.db"
+        ).build()
+    }
 }
