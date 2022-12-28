@@ -1,10 +1,13 @@
 package ru.legoushka.cftbinlist.bininfo
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -14,7 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun BinInfoScreen(
     viewModel: BinInfoViewModel = hiltViewModel()
@@ -22,6 +25,9 @@ fun BinInfoScreen(
     val binInfo = remember {
         viewModel.binInfo
     }
+
+    val history = viewModel.history.collectAsState(initial = listOf())
+
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
@@ -100,8 +106,10 @@ fun BinInfoScreen(
                             Text(text = binInfo.value.bank.phone)
                         }
                     }
-                    Row(modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
                         Column() {
                             Text(text = "CARD NUMBER")
                             Row() {
@@ -125,6 +133,26 @@ fun BinInfoScreen(
                             Text(text = "COUNTRY")
                             Text(text = "${binInfo.value.country.emoji} ${binInfo.value.country.name}")
                             Text(text = "(latitude: ${binInfo.value.country.latitude}, longitude: ${binInfo.value.country.longitude})")
+                        }
+                    }
+                }
+            }
+            Button(onClick = {viewModel.onDeleteHistoryClick()}) {
+                Text(text = "Очистить историю")
+            }
+            LazyColumn {
+                items(history.value) { item ->
+                    Card(modifier = Modifier.fillMaxWidth(), onClick = {
+                        viewModel.onHistoryItemClick(item)
+                    }) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = item.bin)
+                            Text(text = item.time)
                         }
                     }
                 }
