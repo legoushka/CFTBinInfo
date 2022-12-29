@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Number(
     @SerialName("length")
-    val length: Int = 0,
+    val length: Int? = null,
     @SerialName("luhn")
-    val luhn: Boolean = false
+    val luhn: Boolean? = null
 )

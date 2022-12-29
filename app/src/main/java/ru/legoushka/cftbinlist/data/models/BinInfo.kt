@@ -9,15 +9,15 @@ data class BinInfo(
     @SerialName("bank")
     val bank: Bank = Bank(),
     @SerialName("brand")
-    val brand: String = "",
+    val brand: String? = null,
     @SerialName("country")
     val country: Country = Country(),
     @SerialName("number")
     val number: Number = Number(),
     @SerialName("prepaid")
-    val prepaid: Boolean = false,
+    val prepaid: Boolean? = null,
     @SerialName("scheme")
-    val scheme: String = "",
+    val scheme: String? = null,
     @SerialName("type")
-    val type: String = ""
+    val type: String? = null
 )
