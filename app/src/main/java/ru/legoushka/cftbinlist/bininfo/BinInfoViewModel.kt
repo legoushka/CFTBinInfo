@@ -21,8 +21,14 @@ class BinInfoViewModel @Inject constructor(
     val history = repository.getHistoryStream().map { it.sortedByDescending { element -> element.id }}
 
     fun onGetButtonClick() = viewModelScope.launch {
-        binInfo.value = repository.getBinInfo(binTextField.value) ?: BinInfo()
-        repository.insertStamp(binInfo.value, binTextField.value)
+        val bin = repository.getBinInfo(binTextField.value)
+        if(bin != null) {
+            binInfo.value = bin
+            repository.insertStamp(binInfo.value, binTextField.value)
+        }
+        else {
+
+        }
     }
 
     fun onDeleteHistoryClick() = viewModelScope.launch {
@@ -31,5 +37,17 @@ class BinInfoViewModel @Inject constructor(
 
     fun onHistoryItemClick(item: BinInfoSearchHistory) {
         binInfo.value = item.binInfo
+    }
+
+    fun onUrlClick(URL: String){
+
+    }
+
+    fun onPhoneNumberClick(phone: String){
+
+    }
+
+    fun onCoordinatesClick(lat: Int, long: Int){
+
     }
 }
