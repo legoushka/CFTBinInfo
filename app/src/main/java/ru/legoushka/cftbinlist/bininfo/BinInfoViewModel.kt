@@ -20,7 +20,7 @@ class BinInfoViewModel @Inject constructor(
 ) : ViewModel() {
 
     val binInfo = mutableStateOf(BinInfo())
-    val binTextField = mutableStateOf("45717360")
+    val binTextField = mutableStateOf("")
     val history = repository.getHistoryStream().map { it.sortedByDescending { element -> element.id }}
 
     fun onGetButtonClick(context: Context) = viewModelScope.launch {
