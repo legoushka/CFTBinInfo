@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">CFTBinInfo</string>
+
+    <string name="text_field_label">BIN банковской карты</string>
+    <string name="get_data_button_label">Получить данные</string>
+    <string name="clear_history_button_label">Очистить историю</string>
+    <string name="toast">Ошибка при запросе данных карты!</string>
+
 </resources>

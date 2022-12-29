@@ -25,16 +25,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.SoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import ru.legoushka.cftbinlist.R
 import ru.legoushka.cftbinlist.data.models.*
 import ru.legoushka.cftbinlist.ui.theme.Black
 import ru.legoushka.cftbinlist.ui.theme.CFTBinListTheme
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun BinInfoScreen(
     viewModel: BinInfoViewModel = hiltViewModel()
@@ -115,12 +117,12 @@ fun BinInfoContent(
             value = textFieldValue,
             label = {
                 Text(
-                    text = "BIN банковской карты",
+                    text = stringResource(R.string.text_field_label),
                     style = MaterialTheme.typography.body1,
                     fontSize = 12.sp
                 )
             },
-            placeholder = { Text("1234 5678 или 1234 56") },
+            placeholder = { Text("1234 5678") },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             keyboardActions = KeyboardActions
                 (onDone = {
@@ -136,11 +138,12 @@ fun BinInfoContent(
             shape = MaterialTheme.shapes.medium,
             colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.background)
         ) {
-            Text(text = "Получить данные", style = MaterialTheme.typography.body1)
+            Text(text = stringResource(R.string.get_data_button_label), style = MaterialTheme.typography.body1)
         }
         Spacer(modifier = Modifier.height(8.dp))
-
-        BinInfoCard(binInfo = binInfo, onUrlClick, onPhoneNumberClick, onCoordinatesClick)
+        if (binInfo.scheme != null){
+            BinInfoCard(binInfo = binInfo, onUrlClick, onPhoneNumberClick, onCoordinatesClick)
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -150,7 +153,7 @@ fun BinInfoContent(
             shape = MaterialTheme.shapes.medium,
             colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.background)
         ) {
-            Text(text = "Очистить историю", style = MaterialTheme.typography.body1)
+            Text(text = stringResource(R.string.clear_history_button_label), style = MaterialTheme.typography.body1)
         }
         Spacer(modifier = Modifier.height(8.dp))
         SearchHistory(

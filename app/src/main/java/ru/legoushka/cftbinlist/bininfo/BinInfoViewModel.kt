@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import ru.legoushka.cftbinlist.R
 import ru.legoushka.cftbinlist.data.models.BinInfo
 import ru.legoushka.cftbinlist.data.models.BinInfoSearchHistory
 import ru.legoushka.cftbinlist.data.source.BinInfoRepository
@@ -29,7 +30,7 @@ class BinInfoViewModel @Inject constructor(
             repository.insertStamp(binInfo.value, binTextField.value)
         }
         else {
-            Toast.makeText(context,"Ошибка при запросе данных карты!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.resources.getText(R.string.toast), Toast.LENGTH_SHORT).show()
         }
     }
 
