@@ -1,8 +1,10 @@
 package ru.legoushka.cftbinlist.bininfo
 
+import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
+import android.net.Uri
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,7 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.SoftwareKeyboardController
@@ -28,8 +30,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import ru.legoushka.cftbinlist.data.models.*
+import ru.legoushka.cftbinlist.ui.theme.Black
 import ru.legoushka.cftbinlist.ui.theme.CFTBinListTheme
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
@@ -45,6 +47,8 @@ fun BinInfoScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
+    val context = LocalContext.current
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colors.background
@@ -56,12 +60,33 @@ fun BinInfoScreen(
             binInfo = binInfo.value,
             history = history.value,
             onTextFieldValueChange = { viewModel.binTextField.value = it },
-            onGetButtonClick =  viewModel::onGetButtonClick,
-            onUrlClick = viewModel::onUrlClick,
-            onPhoneNumberClick = viewModel::onPhoneNumberClick,
-            onCoordinatesClick = viewModel::onCoordinatesClick,
-            onHistoryItemClick =  viewModel::onHistoryItemClick,
-            onDeleteHistoryClick =  viewModel::onDeleteHistoryClick
+            onGetButtonClick = viewModel::onGetButtonClick,
+            onUrlClick = { URL ->
+                context.startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("http://$URL")
+                    )
+                )
+            },
+            onPhoneNumberClick = {tel ->
+                context.startActivity(
+                    Intent(
+                        Intent.ACTION_DIAL,
+                        Uri.parse("tel:$tel")
+                    )
+                )
+            },
+            onCoordinatesClick = { lat, long, country ->
+                context.startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("geo:$lat,$long?q=$country")
+                    )
+                )
+            },
+            onHistoryItemClick = viewModel::onHistoryItemClick,
+            onDeleteHistoryClick = viewModel::onDeleteHistoryClick
         )
     }
 }
@@ -75,13 +100,14 @@ fun BinInfoContent(
     binInfo: BinInfo,
     history: List<BinInfoSearchHistory>,
     onTextFieldValueChange: (String) -> Unit,
-    onGetButtonClick: () -> Unit,
+    onGetButtonClick: (Context) -> Unit,
     onUrlClick: (String) -> Unit,
     onPhoneNumberClick: (String) -> Unit,
-    onCoordinatesClick: (Int, Int) -> Unit,
+    onCoordinatesClick: (Int, Int, String) -> Unit,
     onHistoryItemClick: (BinInfoSearchHistory) -> Unit,
     onDeleteHistoryClick: () -> Unit,
 ) {
+    val localContext = LocalContext.current
     Column(modifier = Modifier.padding(16.dp)) {
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
@@ -106,7 +132,7 @@ fun BinInfoContent(
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedButton(
             modifier = Modifier.fillMaxWidth(),
-            onClick = onGetButtonClick,
+            onClick = { onGetButtonClick(localContext) },
             shape = MaterialTheme.shapes.medium,
             colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.background)
         ) {
@@ -139,16 +165,16 @@ fun BinInfoCard(
     binInfo: BinInfo,
     onUrlClick: (String) -> Unit,
     onPhoneNumberClick: (String) -> Unit,
-    onCoordinatesClick: (Int, Int) -> Unit
+    onCoordinatesClick: (Int, Int, String) -> Unit
 ) {
     Card(
         shape = MaterialTheme.shapes.large,
         backgroundColor = MaterialTheme.colors.surface,
         modifier = Modifier
             .fillMaxWidth()
-            .animateContentSize(),
-
-        ) {
+            .defaultMinSize(minHeight = 1.dp)
+            .animateContentSize()
+    ) {
         Column(modifier = Modifier.padding(24.dp)) {
 
             Row(
@@ -201,18 +227,30 @@ fun BinInfoCard(
             }
             if (binInfo.country.name != null) {
                 Spacer(modifier = Modifier.height(32.dp))
-                Column(modifier = Modifier.clickable { onCoordinatesClick(binInfo.country.latitude!!, binInfo.country.longitude!!) }) {
+                Column(modifier = Modifier
+                    .clickable {
+                        onCoordinatesClick(
+                            binInfo.country.latitude!!,
+                            binInfo.country.longitude!!,
+                            binInfo.country.name
+                        )
+                    }
+                ) {
                     Row(verticalAlignment = Alignment.CenterVertically)
                     {
                         Text(text = binInfo.country.emoji!!)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = binInfo.country.name, style = MaterialTheme.typography.subtitle1)
+                        Text(
+                            text = binInfo.country.name,
+                            style = MaterialTheme.typography.subtitle1
+                        )
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Outlined.LocationOn,
                             contentDescription = "Coordinates",
-                            Modifier.size(20.dp)
+                            Modifier.size(20.dp),
+                            tint = Black
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
@@ -317,7 +355,7 @@ fun PreviewBinInfoCard() {
             ),
             onPhoneNumberClick = {},
             onUrlClick = {},
-            onCoordinatesClick = {_,_ ->}
+            onCoordinatesClick = { _, _, _ -> }
         )
     }
 }
@@ -354,7 +392,7 @@ fun PreviewBinInfoContent() {
                 onDeleteHistoryClick = {},
                 onPhoneNumberClick = {},
                 onUrlClick = {},
-                onCoordinatesClick = {_,_ ->}
+                onCoordinatesClick = { _, _, _ -> }
             )
         }
     }
