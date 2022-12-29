@@ -4,7 +4,9 @@ import kotlinx.coroutines.flow.Flow
 import ru.legoushka.cftbinlist.data.models.BinInfo
 import ru.legoushka.cftbinlist.data.models.BinInfoSearchHistory
 import java.time.Instant
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 
 class DefaultBinInfoRepository(
@@ -30,8 +32,12 @@ class DefaultBinInfoRepository(
     }
 
     override suspend fun insertStamp(binInfo: BinInfo, bin: String) {
-        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm a")
-        val time = Instant.now().toString()
+        val time = Instant.ofEpochMilli(Instant.now().toEpochMilli())
+            .atZone( ZoneId.systemDefault() )
+            .toLocalDateTime()
+            .format(
+                DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+            ).toString()
         val stamp = BinInfoSearchHistory(bin = bin, binInfo = binInfo, time = time, id = 0)
         searchHistorySource.insertStamp(stamp)
     }
