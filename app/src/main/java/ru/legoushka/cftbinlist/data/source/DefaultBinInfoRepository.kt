@@ -12,7 +12,13 @@ class DefaultBinInfoRepository(
     private val searchHistorySource: SearchHistorySource
 ) : BinInfoRepository {
     override suspend fun getBinInfo(bin: String): BinInfo? {
-        return remoteDataSource.getBinInfo(bin)
+        val remote = remoteDataSource.getBinInfo(bin)
+        if (remote != null){
+            return remoteDataSource.getBinInfo(bin)
+        }
+        else{
+            return searchHistorySource.getBinInfo(bin)
+        }
     }
 
     override fun getHistoryStream(): Flow<List<BinInfoSearchHistory>> {

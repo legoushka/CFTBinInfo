@@ -1,5 +1,7 @@
 package ru.legoushka.cftbinlist.bininfo
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,14 +22,14 @@ class BinInfoViewModel @Inject constructor(
     val binTextField = mutableStateOf("45717360")
     val history = repository.getHistoryStream().map { it.sortedByDescending { element -> element.id }}
 
-    fun onGetButtonClick() = viewModelScope.launch {
+    fun onGetButtonClick(context: Context) = viewModelScope.launch {
         val bin = repository.getBinInfo(binTextField.value)
         if(bin != null) {
             binInfo.value = bin
             repository.insertStamp(binInfo.value, binTextField.value)
         }
         else {
-
+            Toast.makeText(context,"Ошибка при запросе данных карты!", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -39,15 +41,4 @@ class BinInfoViewModel @Inject constructor(
         binInfo.value = item.binInfo
     }
 
-    fun onUrlClick(URL: String){
-
-    }
-
-    fun onPhoneNumberClick(phone: String){
-
-    }
-
-    fun onCoordinatesClick(lat: Int, long: Int){
-
-    }
 }

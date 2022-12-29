@@ -17,4 +17,7 @@ interface SearchHistoryDao {
 
     @Query("DELETE FROM History")
     suspend fun deleteHistory()
+
+    @Query("SELECT * FROM History")
+    suspend fun getBinInfo(): List<BinInfoSearchHistory>
 }
